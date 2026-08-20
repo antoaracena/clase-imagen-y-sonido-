@@ -1,0 +1,2061 @@
+<!DOCTYPE html>
+<html lang="es">
+
+<head>
+
+<meta charset="UTF-8">
+
+<meta name="viewport"
+      content="width=device-width, initial-scale=1.0">
+
+<title>Imagen → Música</title>
+
+<style>
+
+* {
+    box-sizing: border-box;
+}
+
+body {
+
+    margin: 0;
+
+    background:
+        radial-gradient(
+            circle at top,
+            #222 0%,
+            #090909 55%,
+            #000 100%
+        );
+
+    color: white;
+
+    font-family:
+        Arial,
+        Helvetica,
+        sans-serif;
+
+    min-height: 100vh;
+}
+
+header {
+
+    text-align: center;
+
+    padding: 30px 20px 10px;
+}
+
+header h1 {
+
+    font-size: 34px;
+
+    margin: 0 0 10px;
+}
+
+header p {
+
+    color: #aaa;
+
+    margin: 0;
+}
+
+.app {
+
+    width: 95%;
+
+    max-width: 1200px;
+
+    margin: auto;
+
+    padding: 20px;
+}
+
+.panel {
+
+    background: rgba(255,255,255,0.06);
+
+    border:
+        1px solid
+        rgba(255,255,255,0.12);
+
+    border-radius: 18px;
+
+    padding: 20px;
+
+    margin-bottom: 20px;
+
+    backdrop-filter: blur(10px);
+}
+
+.controls {
+
+    display: grid;
+
+    grid-template-columns:
+        repeat(auto-fit, minmax(180px, 1fr));
+
+    gap: 15px;
+}
+
+.control {
+
+    background: rgba(0,0,0,0.3);
+
+    padding: 15px;
+
+    border-radius: 12px;
+}
+
+.control label {
+
+    display: block;
+
+    margin-bottom: 8px;
+
+    font-size: 14px;
+
+    color: #ccc;
+}
+
+input[type="range"] {
+
+    width: 100%;
+}
+
+.value {
+
+    font-weight: bold;
+
+    float: right;
+}
+
+.canvas-container {
+
+    position: relative;
+
+    text-align: center;
+}
+
+canvas {
+
+    max-width: 100%;
+
+    height: auto;
+
+    border-radius: 12px;
+
+    border:
+        1px solid
+        rgba(255,255,255,0.2);
+
+    box-shadow:
+        0 20px 50px
+        rgba(0,0,0,0.5);
+}
+
+.buttons {
+
+    display: flex;
+
+    flex-wrap: wrap;
+
+    justify-content: center;
+
+    gap: 12px;
+
+    margin-top: 20px;
+}
+
+button {
+
+    padding: 13px 22px;
+
+    border: none;
+
+    border-radius: 10px;
+
+    cursor: pointer;
+
+    font-size: 15px;
+
+    font-weight: bold;
+
+    background: #eee;
+
+    color: #111;
+
+    transition: 0.2s;
+}
+
+button:hover {
+
+    transform: translateY(-2px);
+
+    opacity: 0.85;
+}
+
+#playButton {
+
+    background: #7de2ff;
+}
+
+#stopButton {
+
+    background: #ff7d9d;
+}
+
+.legend {
+
+    display: grid;
+
+    grid-template-columns:
+        repeat(auto-fit, minmax(170px,1fr));
+
+    gap: 10px;
+}
+
+.legend div {
+
+    padding: 12px;
+
+    border-radius: 10px;
+
+    background:
+        rgba(255,255,255,0.05);
+
+    font-size: 14px;
+}
+
+.status {
+
+    text-align: center;
+
+    color: #aaa;
+
+    margin-top: 15px;
+}
+
+</style>
+
+</head>
+
+
+<body>
+
+
+<header>
+
+<h1>🎨 → 🎹 Imagen Musical</h1>
+
+<p>
+Cada característica de la imagen se convierte en una característica sonora
+</p>
+
+</header>
+
+
+<div class="app">
+
+
+<div class="panel">
+
+<h2>1. Cargar imagen</h2>
+
+<input
+    type="file"
+    id="imageInput"
+    accept="image/*"
+>
+
+</div>
+
+
+
+<div class="panel">
+
+<h2>2. Tonificación visual</h2>
+
+<div class="controls">
+
+
+<div class="control">
+
+<label>
+Saturación
+<span
+    class="value"
+    id="satValue"
+>
+120%
+</span>
+</label>
+
+<input
+    type="range"
+    id="saturation"
+    min="50"
+    max="250"
+    value="120"
+>
+
+</div>
+
+
+
+<div class="control">
+
+<label>
+Contraste
+<span
+    class="value"
+    id="contrastValue"
+>
+120%
+</span>
+</label>
+
+<input
+    type="range"
+    id="contrast"
+    min="50"
+    max="250"
+    value="120"
+>
+
+</div>
+
+
+
+<div class="control">
+
+<label>
+Brillo
+<span
+    class="value"
+    id="brightnessValue"
+>
+100%
+</span>
+</label>
+
+<input
+    type="range"
+    id="brightness"
+    min="50"
+    max="180"
+    value="100"
+>
+
+</div>
+
+
+
+<div class="control">
+
+<label>
+Tono
+<span
+    class="value"
+    id="hueValue"
+>
+0°
+</span>
+</label>
+
+<input
+    type="range"
+    id="hue"
+    min="-180"
+    max="180"
+    value="0"
+>
+
+</div>
+
+
+</div>
+
+</div>
+
+
+
+<div class="panel canvas-container">
+
+<h2>3. Imagen / mapa musical</h2>
+
+<canvas id="canvas"></canvas>
+
+</div>
+
+
+
+<div class="panel">
+
+<h2>4. Parámetros musicales</h2>
+
+<div class="controls">
+
+
+<div class="control">
+
+<label>
+Tempo
+<span
+    class="value"
+    id="tempoValue"
+>
+90 BPM
+</span>
+</label>
+
+<input
+    type="range"
+    id="tempo"
+    min="40"
+    max="180"
+    value="90"
+>
+
+</div>
+
+
+
+<div class="control">
+
+<label>
+Cantidad de eventos
+<span
+    class="value"
+    id="densityValue"
+>
+60
+</span>
+</label>
+
+<input
+    type="range"
+    id="density"
+    min="10"
+    max="150"
+    value="60"
+>
+
+</div>
+
+
+
+<div class="control">
+
+<label>
+Intensidad musical
+<span
+    class="value"
+    id="intensityValue"
+>
+80%
+</span>
+</label>
+
+<input
+    type="range"
+    id="intensity"
+    min="10"
+    max="150"
+    value="80"
+>
+
+</div>
+
+
+</div>
+
+
+
+<div class="buttons">
+
+<button id="analyzeButton">
+🔎 Analizar imagen
+</button>
+
+<button id="playButton">
+▶ Convertir en música
+</button>
+
+<button id="stopButton">
+■ Detener
+</button>
+
+</div>
+
+
+<div
+    class="status"
+    id="status"
+>
+Carga una imagen para comenzar.
+</div>
+
+</div>
+
+
+
+<div class="panel">
+
+<h2>5. Mapeo utilizado</h2>
+
+<div class="legend">
+
+<div>
+🎨 <b>Color</b><br>
+→ Nota musical
+</div>
+
+<div>
+☀️ <b>Brillo</b><br>
+→ Volumen
+</div>
+
+<div>
+🌈 <b>Saturación</b><br>
+→ Instrumento
+</div>
+
+<div>
+📐 <b>Bordes</b><br>
+→ Percusión
+</div>
+
+<div>
+🌀 <b>Textura</b><br>
+→ Vibrato / distorsión
+</div>
+
+<div>
+↔️ <b>Posición X</b><br>
+→ Paneo estéreo
+</div>
+
+<div>
+↕️ <b>Posición Y</b><br>
+→ Octava
+</div>
+
+<div>
+🎵 <b>Matiz</b><br>
+→ Escala musical
+</div>
+
+</div>
+
+</div>
+
+
+</div>
+
+
+
+<script>
+
+
+// =====================================================
+// VARIABLES
+// =====================================================
+
+const canvas =
+    document.getElementById("canvas");
+
+const ctx =
+    canvas.getContext("2d");
+
+const imageInput =
+    document.getElementById("imageInput");
+
+let originalImage = null;
+
+let originalImageData = null;
+
+let audioContext = null;
+
+let playing = false;
+
+let stopRequested = false;
+
+
+
+// =====================================================
+// CONTROLES
+// =====================================================
+
+const saturation =
+    document.getElementById("saturation");
+
+const contrast =
+    document.getElementById("contrast");
+
+const brightness =
+    document.getElementById("brightness");
+
+const hue =
+    document.getElementById("hue");
+
+
+
+function updateLabels() {
+
+    document.getElementById("satValue")
+        .textContent =
+        saturation.value + "%";
+
+    document.getElementById("contrastValue")
+        .textContent =
+        contrast.value + "%";
+
+    document.getElementById("brightnessValue")
+        .textContent =
+        brightness.value + "%";
+
+    document.getElementById("hueValue")
+        .textContent =
+        hue.value + "°";
+
+    document.getElementById("tempoValue")
+        .textContent =
+        document.getElementById("tempo").value
+        + " BPM";
+
+    document.getElementById("densityValue")
+        .textContent =
+        document.getElementById("density").value;
+
+    document.getElementById("intensityValue")
+        .textContent =
+        document.getElementById("intensity").value
+        + "%";
+}
+
+
+
+document.querySelectorAll("input")
+    .forEach(input => {
+
+        input.addEventListener(
+            "input",
+            () => {
+
+                updateLabels();
+
+                if (originalImage) {
+
+                    drawTonedImage();
+                }
+
+            }
+        );
+
+    });
+
+
+
+// =====================================================
+// CARGAR IMAGEN
+// =====================================================
+
+imageInput.addEventListener(
+    "change",
+    function(event) {
+
+        const file =
+            event.target.files[0];
+
+        if (!file) return;
+
+
+        const img =
+            new Image();
+
+
+        img.onload = function() {
+
+            originalImage = img;
+
+            canvas.width =
+                img.width;
+
+            canvas.height =
+                img.height;
+
+
+            ctx.drawImage(
+                img,
+                0,
+                0,
+                canvas.width,
+                canvas.height
+            );
+
+
+            originalImageData =
+                ctx.getImageData(
+                    0,
+                    0,
+                    canvas.width,
+                    canvas.height
+                );
+
+
+            drawTonedImage();
+
+
+            document.getElementById("status")
+                .textContent =
+                "Imagen cargada. Lista para analizar.";
+
+        };
+
+
+        img.src =
+            URL.createObjectURL(file);
+
+    }
+);
+
+
+
+// =====================================================
+// TONIFICACIÓN
+// =====================================================
+
+function drawTonedImage() {
+
+    if (!originalImage) return;
+
+
+    ctx.filter =
+
+        `saturate(${saturation.value}%)
+         contrast(${contrast.value}%)
+         brightness(${brightness.value}%)
+         hue-rotate(${hue.value}deg)`;
+
+
+    ctx.drawImage(
+        originalImage,
+        0,
+        0,
+        canvas.width,
+        canvas.height
+    );
+
+
+    ctx.filter = "none";
+
+}
+
+
+
+// =====================================================
+// RGB → HSL
+// =====================================================
+
+function rgbToHsl(r, g, b) {
+
+    r /= 255;
+    g /= 255;
+    b /= 255;
+
+
+    const max =
+        Math.max(r, g, b);
+
+    const min =
+        Math.min(r, g, b);
+
+
+    let h = 0;
+
+    let s = 0;
+
+    const l =
+        (max + min) / 2;
+
+
+    if (max !== min) {
+
+        const d =
+            max - min;
+
+
+        s =
+            l > 0.5
+            ?
+            d / (2 - max - min)
+            :
+            d / (max + min);
+
+
+        switch(max) {
+
+            case r:
+
+                h =
+                    (g - b) / d
+                    +
+                    (g < b ? 6 : 0);
+
+                break;
+
+
+            case g:
+
+                h =
+                    (b - r) / d
+                    + 2;
+
+                break;
+
+
+            case b:
+
+                h =
+                    (r - g) / d
+                    + 4;
+
+                break;
+        }
+
+
+        h /= 6;
+
+    }
+
+
+    return {
+
+        h: h * 360,
+
+        s: s,
+
+        l: l
+
+    };
+
+}
+
+
+
+// =====================================================
+// HUE → NOTA MUSICAL
+// =====================================================
+
+const musicalScale = [
+
+    "C",
+    "D",
+    "E",
+    "G",
+    "A",
+    "C",
+    "D",
+    "E",
+    "G",
+    "A",
+    "C",
+    "D"
+
+];
+
+
+const frequencies = {
+
+    "C3": 130.81,
+    "D3": 146.83,
+    "E3": 164.81,
+    "G3": 196.00,
+    "A3": 220.00,
+
+    "C4": 261.63,
+    "D4": 293.66,
+    "E4": 329.63,
+    "G4": 392.00,
+    "A4": 440.00,
+
+    "C5": 523.25,
+    "D5": 587.33,
+    "E5": 659.25,
+    "G5": 783.99,
+    "A5": 880.00,
+
+    "C6": 1046.50,
+    "D6": 1174.66,
+    "E6": 1318.51,
+    "G6": 1567.98,
+    "A6": 1760.00
+
+};
+
+
+
+function hueToNote(hue) {
+
+    const index =
+        Math.floor(
+            (hue / 360)
+            *
+            musicalScale.length
+        )
+        %
+        musicalScale.length;
+
+
+    return musicalScale[index];
+
+}
+
+
+
+// =====================================================
+// COLOR → INSTRUMENTO
+// =====================================================
+
+function chooseInstrument(h, s, l) {
+
+    /*
+        AZULES
+        → piano
+
+        ROSADOS
+        → synth
+
+        AMARILLOS
+        → marimba
+
+        OSCUROS
+        → bajo
+    */
+
+
+    if (l < 0.12) {
+
+        return "bass";
+
+    }
+
+
+    if (h >= 190 && h <= 260) {
+
+        return "piano";
+
+    }
+
+
+    if (h >= 280 || h <= 350) {
+
+        return "synth";
+
+    }
+
+
+    if (h >= 35 && h <= 70) {
+
+        return "marimba";
+
+    }
+
+
+    return "piano";
+
+}
+
+
+
+// =====================================================
+// BRILLO → VOLUMEN
+// =====================================================
+
+function brightnessToVolume(brightness) {
+
+    return Math.max(
+        0.01,
+        brightness * 0.65
+    );
+
+}
+
+
+
+// =====================================================
+// SATURACIÓN → INTENSIDAD DEL INSTRUMENTO
+// =====================================================
+
+function saturationToEffect(saturation) {
+
+    return Math.min(
+        1,
+        saturation
+    );
+
+}
+
+
+
+// =====================================================
+// POSICIÓN X → PAN
+// =====================================================
+
+function xToPan(x, width) {
+
+    return (
+        (x / width) * 2
+    ) - 1;
+
+}
+
+
+
+// =====================================================
+// POSICIÓN Y → OCTAVA
+// =====================================================
+
+function yToOctave(y, height) {
+
+    /*
+        ARRIBA
+        → notas agudas
+
+        ABAJO
+        → notas graves
+    */
+
+    const normalized =
+        1 - (y / height);
+
+
+    if (normalized > 0.75)
+        return 6;
+
+    if (normalized > 0.50)
+        return 5;
+
+    if (normalized > 0.25)
+        return 4;
+
+    return 3;
+
+}
+
+
+
+// =====================================================
+// DETECCIÓN DE BORDES
+// =====================================================
+
+function calculateEdgeStrength(
+    data,
+    x,
+    y,
+    width,
+    height
+) {
+
+    if (
+        x <= 0 ||
+        y <= 0 ||
+        x >= width - 1 ||
+        y >= height - 1
+    ) {
+
+        return 1;
+
+    }
+
+
+    function brightnessAt(px, py) {
+
+        const i =
+            (py * width + px) * 4;
+
+
+        return (
+            data[i] * 0.299 +
+            data[i + 1] * 0.587 +
+            data[i + 2] * 0.114
+        );
+
+    }
+
+
+    const left =
+        brightnessAt(
+            x - 1,
+            y
+        );
+
+    const right =
+        brightnessAt(
+            x + 1,
+            y
+        );
+
+    const top =
+        brightnessAt(
+            x,
+            y - 1
+        );
+
+    const bottom =
+        brightnessAt(
+            x,
+            y + 1
+        );
+
+
+    const horizontal =
+        Math.abs(
+            right - left
+        );
+
+    const vertical =
+        Math.abs(
+            bottom - top
+        );
+
+
+    return Math.min(
+        1,
+        (horizontal + vertical)
+        / 255
+    );
+
+}
+
+
+
+// =====================================================
+// TEXTURA
+// =====================================================
+
+function calculateTexture(
+    data,
+    x,
+    y,
+    width,
+    height
+) {
+
+    let values = [];
+
+
+    for (
+        let dy = -1;
+        dy <= 1;
+        dy++
+    ) {
+
+        for (
+            let dx = -1;
+            dx <= 1;
+            dx++
+        ) {
+
+            const px =
+                Math.max(
+                    0,
+                    Math.min(
+                        width - 1,
+                        x + dx
+                    )
+                );
+
+
+            const py =
+                Math.max(
+                    0,
+                    Math.min(
+                        height - 1,
+                        y + dy
+                    )
+                );
+
+
+            const i =
+                (py * width + px) * 4;
+
+
+            const v =
+                (
+                    data[i] +
+                    data[i + 1] +
+                    data[i + 2]
+                ) / 3;
+
+
+            values.push(v);
+
+        }
+
+    }
+
+
+    const average =
+        values.reduce(
+            (a,b) => a + b,
+            0
+        ) / values.length;
+
+
+    const variance =
+        values.reduce(
+            (sum,v) =>
+                sum +
+                Math.pow(
+                    v - average,
+                    2
+                ),
+            0
+        )
+        /
+        values.length;
+
+
+    return Math.min(
+        1,
+        Math.sqrt(variance) / 80
+    );
+
+}
+
+
+
+// =====================================================
+// ANALIZAR IMAGEN
+// =====================================================
+
+function analyzeImage() {
+
+    if (!originalImageData) {
+
+        alert(
+            "Primero carga una imagen."
+        );
+
+        return;
+
+    }
+
+
+    const data =
+        originalImageData.data;
+
+    const width =
+        originalImageData.width;
+
+    const height =
+        originalImageData.height;
+
+
+    let samples = [];
+
+    const gridX = 20;
+
+    const gridY = 20;
+
+
+    for (
+        let gy = 0;
+        gy < gridY;
+        gy++
+    ) {
+
+        for (
+            let gx = 0;
+            gx < gridX;
+            gx++
+        ) {
+
+
+            const x =
+                Math.floor(
+                    gx *
+                    width /
+                    gridX
+                );
+
+
+            const y =
+                Math.floor(
+                    gy *
+                    height /
+                    gridY
+                );
+
+
+            const index =
+                (y * width + x) * 4;
+
+
+            const r =
+                data[index];
+
+            const g =
+                data[index + 1];
+
+            const b =
+                data[index + 2];
+
+
+            const hsl =
+                rgbToHsl(
+                    r,
+                    g,
+                    b
+                );
+
+
+            const note =
+                hueToNote(
+                    hsl.h
+                );
+
+
+            const octave =
+                yToOctave(
+                    y,
+                    height
+                );
+
+
+            const instrument =
+                chooseInstrument(
+                    hsl.h,
+                    hsl.s,
+                    hsl.l
+                );
+
+
+            const volume =
+                brightnessToVolume(
+                    hsl.l
+                );
+
+
+            const texture =
+                calculateTexture(
+                    data,
+                    x,
+                    y,
+                    width,
+                    height
+                );
+
+
+            const edge =
+                calculateEdgeStrength(
+                    data,
+                    x,
+                    y,
+                    width,
+                    height
+                );
+
+
+            const pan =
+                xToPan(
+                    x,
+                    width
+                );
+
+
+            samples.push({
+
+                x,
+                y,
+
+                r,
+                g,
+                b,
+
+                hue: hsl.h,
+
+                saturation: hsl.s,
+
+                brightness: hsl.l,
+
+                note,
+
+                octave,
+
+                instrument,
+
+                volume,
+
+                texture,
+
+                edge,
+
+                pan
+
+            });
+
+        }
+
+    }
+
+
+    window.imageSamples =
+        samples;
+
+
+    document.getElementById("status")
+        .textContent =
+        samples.length +
+        " zonas analizadas. Imagen convertida en mapa musical.";
+
+}
+
+
+
+// =====================================================
+// OSCILADOR / INSTRUMENTOS
+// =====================================================
+
+function createInstrument(
+    type,
+    frequency,
+    volume,
+    pan,
+    texture,
+    duration
+) {
+
+    if (!audioContext) {
+
+        audioContext =
+            new (
+                window.AudioContext ||
+                window.webkitAudioContext
+            )();
+
+    }
+
+
+    const now =
+        audioContext.currentTime;
+
+
+    const gain =
+        audioContext.createGain();
+
+
+    const panner =
+        audioContext.createStereoPanner();
+
+
+    panner.pan.value =
+        pan;
+
+
+    gain.connect(panner);
+
+    panner.connect(
+        audioContext.destination
+    );
+
+
+    // =================================================
+    // PIANO
+    // =================================================
+
+    if (type === "piano") {
+
+        const osc1 =
+            audioContext.createOscillator();
+
+        const osc2 =
+            audioContext.createOscillator();
+
+
+        osc1.type =
+            "triangle";
+
+        osc2.type =
+            "sine";
+
+
+        osc1.frequency.value =
+            frequency;
+
+        osc2.frequency.value =
+            frequency * 2;
+
+
+        const gain2 =
+            audioContext.createGain();
+
+
+        gain2.gain.value =
+            0.18;
+
+
+        osc1.connect(gain);
+
+        osc2.connect(gain2);
+
+        gain2.connect(gain);
+
+
+        gain.gain.setValueAtTime(
+            0,
+            now
+        );
+
+
+        gain.gain.linearRampToValueAtTime(
+            volume,
+            now + 0.015
+        );
+
+
+        gain.gain.exponentialRampToValueAtTime(
+            0.001,
+            now + duration
+        );
+
+
+        osc1.start(now);
+
+        osc2.start(now);
+
+
+        osc1.stop(
+            now + duration
+        );
+
+        osc2.stop(
+            now + duration
+        );
+
+    }
+
+
+
+    // =================================================
+    // SYNTH
+    // =================================================
+
+    if (type === "synth") {
+
+        const osc =
+            audioContext.createOscillator();
+
+
+        osc.type =
+            "sawtooth";
+
+
+        osc.frequency.value =
+            frequency;
+
+
+        // TEXTURA → vibrato
+
+        const lfo =
+            audioContext.createOscillator();
+
+
+        const lfoGain =
+            audioContext.createGain();
+
+
+        lfo.frequency.value =
+            3 + texture * 8;
+
+
+        lfoGain.gain.value =
+            texture * 25;
+
+
+        lfo.connect(lfoGain);
+
+        lfoGain.connect(
+            osc.frequency
+        );
+
+
+        osc.connect(gain);
+
+
+        gain.gain.setValueAtTime(
+            0,
+            now
+        );
+
+
+        gain.gain.linearRampToValueAtTime(
+            volume * 0.5,
+            now + 0.03
+        );
+
+
+        gain.gain.exponentialRampToValueAtTime(
+            0.001,
+            now + duration
+        );
+
+
+        osc.start(now);
+
+        lfo.start(now);
+
+
+        osc.stop(
+            now + duration
+        );
+
+        lfo.stop(
+            now + duration
+        );
+
+    }
+
+
+
+    // =================================================
+    // MARIMBA
+    // =================================================
+
+    if (type === "marimba") {
+
+        const osc =
+            audioContext.createOscillator();
+
+
+        osc.type =
+            "sine";
+
+
+        osc.frequency.value =
+            frequency;
+
+
+        osc.connect(gain);
+
+
+        gain.gain.setValueAtTime(
+            volume,
+            now
+        );
+
+
+        gain.gain.exponentialRampToValueAtTime(
+            0.001,
+            now + duration * 0.6
+        );
+
+
+        osc.start(now);
+
+
+        osc.stop(
+            now + duration
+        );
+
+    }
+
+
+
+    // =================================================
+    // BAJO
+    // =================================================
+
+    if (type === "bass") {
+
+        const osc =
+            audioContext.createOscillator();
+
+
+        osc.type =
+            "square";
+
+
+        osc.frequency.value =
+            frequency / 2;
+
+
+        osc.connect(gain);
+
+
+        gain.gain.setValueAtTime(
+            volume * 0.6,
+            now
+        );
+
+
+        gain.gain.exponentialRampToValueAtTime(
+            0.001,
+            now + duration
+        );
+
+
+        osc.start(now);
+
+        osc.stop(
+            now + duration
+        );
+
+    }
+
+}
+
+
+
+// =====================================================
+// PERCUSIÓN POR BORDES
+// =====================================================
+
+function playPercussion(
+    strength
+) {
+
+    if (strength < 0.30)
+        return;
+
+
+    const bufferSize =
+        audioContext.sampleRate *
+        0.08;
+
+
+    const buffer =
+        audioContext.createBuffer(
+            1,
+            bufferSize,
+            audioContext.sampleRate
+        );
+
+
+    const output =
+        buffer.getChannelData(0);
+
+
+    for (
+        let i = 0;
+        i < bufferSize;
+        i++
+    ) {
+
+        output[i] =
+            Math.random() * 2 - 1;
+
+    }
+
+
+    const noise =
+        audioContext.createBufferSource();
+
+
+    noise.buffer =
+        buffer;
+
+
+    const filter =
+        audioContext.createBiquadFilter();
+
+
+    filter.type =
+        "highpass";
+
+
+    filter.frequency.value =
+        1000 +
+        strength * 4000;
+
+
+    const gain =
+        audioContext.createGain();
+
+
+    gain.gain.value =
+        strength * 0.25;
+
+
+    noise
+        .connect(filter)
+        .connect(gain)
+        .connect(
+            audioContext.destination
+        );
+
+
+    noise.start();
+
+}
+
+
+
+// =====================================================
+// REPRODUCIR IMAGEN
+// =====================================================
+
+async function playImage() {
+
+    if (!window.imageSamples) {
+
+        analyzeImage();
+
+    }
+
+
+    if (!window.imageSamples)
+        return;
+
+
+    if (playing)
+        return;
+
+
+    playing = true;
+
+    stopRequested = false;
+
+
+    if (!audioContext) {
+
+        audioContext =
+            new (
+                window.AudioContext ||
+                window.webkitAudioContext
+            )();
+
+    }
+
+
+    await audioContext.resume();
+
+
+    const tempo =
+        Number(
+            document.getElementById(
+                "tempo"
+            ).value
+        );
+
+
+    const intensity =
+        Number(
+            document.getElementById(
+                "intensity"
+            ).value
+        ) / 100;
+
+
+    const duration =
+        60 / tempo;
+
+
+    const samples =
+        window.imageSamples;
+
+
+    /*
+        Ordenamos las zonas:
+
+        izquierda → derecha
+
+        arriba → abajo
+    */
+
+
+    const selected =
+        samples
+        .filter(
+            s =>
+                s.brightness > 0.05
+        );
+
+
+    const density =
+        Number(
+            document.getElementById(
+                "density"
+            ).value
+        );
+
+
+    /*
+        Reducir cantidad de eventos
+    */
+
+    const step =
+        Math.max(
+            1,
+            Math.floor(
+                selected.length /
+                density
+            )
+        );
+
+
+    for (
+        let i = 0;
+        i < selected.length;
+        i += step
+    ) {
+
+        if (stopRequested)
+            break;
+
+
+        const s =
+            selected[i];
+
+
+        const frequency =
+            frequencies[
+                s.note +
+                s.octave
+            ];
+
+
+        if (!frequency)
+            continue;
+
+
+        const volume =
+            Math.min(
+                0.8,
+                s.volume *
+                intensity
+            );
+
+
+        /*
+            TEXTURA
+            aumenta el carácter
+            del sonido
+        */
+
+
+        createInstrument(
+
+            s.instrument,
+
+            frequency,
+
+            volume,
+
+            s.pan,
+
+            s.texture,
+
+            duration
+
+        );
+
+
+        /*
+            BORDES
+            producen percusión
+        */
+
+
+        if (
+            s.edge >
+            0.35
+        ) {
+
+            playPercussion(
+                s.edge
+            );
+
+        }
+
+
+        await new Promise(
+            resolve =>
+                setTimeout(
+                    resolve,
+                    duration * 1000
+                )
+        );
+
+    }
+
+
+    playing = false;
+
+
+    document.getElementById("status")
+        .textContent =
+        "Conversión terminada.";
+
+}
+
+
+
+// =====================================================
+// DETENER
+// =====================================================
+
+document.getElementById(
+    "stopButton"
+)
+.addEventListener(
+    "click",
+    function() {
+
+        stopRequested = true;
+
+        playing = false;
+
+
+        if (audioContext) {
+
+            audioContext.suspend();
+
+        }
+
+
+        document.getElementById(
+            "status"
+        ).textContent =
+        "Reproducción detenida.";
+
+    }
+);
+
+
+
+// =====================================================
+// BOTONES
+// =====================================================
+
+document.getElementById(
+    "analyzeButton"
+)
+.addEventListener(
+    "click",
+    analyzeImage
+);
+
+
+document.getElementById(
+    "playButton"
+)
+.addEventListener(
+    "click",
+    playImage
+);
+
+
+// =====================================================
+// INICIO
+// =====================================================
+
+updateLabels();
+
+</script>
+
+
+</body>
+
+</html>
